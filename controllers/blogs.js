@@ -1,50 +1,97 @@
 const mongoose = require("mongoose");
-const Blog = mongoose.model('Blog')
+const Blog = mongoose.model("Blog");
+const slugify = require("slugify");
+const uniqueSlug = require("unique-slug");
+const { getAccessToken, getAuth0User } = require("./auth");
 
 exports.getBlogs = async (req, res) => {
-  const blogs = await Blog.find({ status: 'published' }).sort({ createdAt: -1 })
-  return res.json(blogs)
-}
+  const blogs = await Blog.find({ status: "published" }).sort({
+    createdAt: -1,
+  });
+  const { access_token } = await getAccessToken();
+  let blogsWithUsers = [];
+  const authors = {};
+
+  for (let blog of blogs) {
+    const author =
+      authors[blog.userId] || (await getAuth0User(access_token, blog.userId));
+    authors[author.user_id] = author;
+    blogsWithUsers.push({ blog, author });
+  }
+  return res.json(blogsWithUsers);
+};
+
+exports.getBlogsByUser = async (req, res) => {
+  const userId = req.user.sub;
+  const blogs = await Blog.find({
+    userId,
+    status: { $in: ["draft", "published"] },
+  });
+  return res.json(blogs);
+};
 
 exports.getBlogById = async (req, res) => {
-  const blog = await Blog.findById(req.params.id)
-  return res.json(blog)
-}
+  const blog = await Blog.findById(req.params.id);
+  return res.json(blog);
+};
 
 exports.getBlogBySlug = async (req, res) => {
-  const blog = await Blog.findOne({ slug: req.params.slug })
-  return res.json(blog)
-}
+  const blog = await Blog.findOne({ slug: req.params.slug });
+  const { access_token } = await getAccessToken();
+  const author = await getAuth0User(access_token, blog.userId);
+  return res.json({ blog, author });
+};
 
 exports.createBlog = async (req, res) => {
   const blogData = req.body;
-  blogData.userId = req.user.sub
-  const blog = new Blog(blogData)
+  blogData.userId = req.user.sub;
+  const blog = new Blog(blogData);
   try {
-    const createdBlog = await blog.save()
-    return res.json(createdBlog)
+    const createdBlog = await blog.save();
+    return res.json(createdBlog);
   } catch (e) {
-    return res.status(e.status || 422).send(e.message)
+    return res.status(e.status || 422).send(e.message);
   }
-}
+};
+
+const _saveBlog = async (blog) => {
+  try {
+    const createBlog = await blog.save();
+    return createBlog;
+  } catch (e) {
+    if (e.code === 11000 && e.keyPattern && e.keyPattern.slug) {
+      blog.slug += `-${uniqueSlug()}`;
+      return _saveBlog(blog);
+    }
+    throw e;
+  }
+};
 
 exports.updateBlog = async (req, res) => {
   const {
     body,
     params: { id },
   } = req;
-  Blog.findById(id,async (err, blog) => {
+  Blog.findById(id, async (err, blog) => {
     if (err) {
-      return res.status(e.status || 422).send(e.message)
+      return res.status(e.status || 422).send(e.message);
     }
+
+    if (body.status && body.status === "published" && !blog.slug) {
+      blog.slug = slugify(blog.title, {
+        replacement: "-",
+        lower: true,
+      });
+    }
+
     blog.set(body);
-    blog.updatedAt = new Date()
+    blog.updatedAt = new Date();
+
     try {
-      const updatedBlog = await blog.save()
-      return res.json(updatedBlog)
+      const updatedBlog = await _saveBlog(blog);
+      return res.json(updatedBlog);
+    } catch (e) {
+      return res.status(e.status || 422).send(e.message);
     }
-    catch (e) {
-      return res.status(e.status || 422).send(e.message)
-    }
-  })
+  });
 };
