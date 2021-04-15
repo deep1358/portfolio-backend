@@ -9,6 +9,7 @@ const runServer = async()=>{
   const port = process.env.PORT || 3001
 
   app.use('/api/v1/portfolios',require("./routes/portfolios"))
+  app.use('/api/v1/blogs',require("./routes/blogs"))
 
   app.listen(port,e=>{
     if(e) console.error(e)

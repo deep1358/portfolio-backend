@@ -1,5 +1,5 @@
 const data = {
-  portfolios:[
+  portfolios: [
     {
       title: 'Job in Netcentric',
       company: 'Netcentric',
@@ -9,7 +9,7 @@ const data = {
       description: 'Doing something, programing....',
       startDate: '01/01/2014',
       endDate: '01/01/2016',
-      userId:'google-oauth2|115227964770374211286'
+      userId: 'google-oauth2|115227964770374211286'
     },
     {
       title: 'Job in Siemens',
@@ -17,10 +17,10 @@ const data = {
       companyWebsite: 'www.google.com',
       location: 'Slovakia, Kosice',
       jobTitle: 'Software Engineer',
-      description: 'Responsoble for parsing framework for JSON medical data.',
+      description: 'Responsible for parsing framework for JSON medical data.',
       startDate: '01/01/2011',
       endDate: '01/01/2013',
-      userId:'google-oauth2|115227964770374211286'
+      userId: 'google-oauth2|115227964770374211286'
     },
     {
       title: 'Work in USA',
@@ -31,7 +31,32 @@ const data = {
       description: 'So much responsibility....Overloaaaaaad',
       startDate: '01/01/2010',
       endDate: '01/01/2011',
-      userId:'google-oauth2|115227964770374211286'
+      userId: 'google-oauth2|115227964770374211286'
+    }
+  ], blogs: [
+    {
+      slug: 'my-first-blog',
+      title: 'My First Blog',
+      subTitle: 'It was chilly winter day...',
+      content: '<p>Some very nice content</p>',
+      userId: 'google-oauth2|115227964770374211286',
+      status: 'published'
+    },
+    {
+      slug: 'my-second-blog',
+      title: 'My Second Blog',
+      subTitle: 'It was hot summer day...',
+      content: '<p>Some very nice content</p>',
+      userId: 'google-oauth2|115227964770374211286',
+      status: 'published'
+    },
+    {
+      slug: 'my-third-blog',
+      title: 'My Third Blog',
+      subTitle: 'It was rainy spring day...',
+      content: '<p>Some very nice content</p>',
+      userId: 'google-oauth2|115227964770374211286',
+      status: 'published'
     }
   ]
 }
